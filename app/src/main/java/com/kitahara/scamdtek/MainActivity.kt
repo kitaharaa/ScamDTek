@@ -16,7 +16,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.kitahara.scamdtek.common.theme.ScamDTekTheme
 import com.kitahara.scamdtek.common.toast
-import com.kitahara.scamdtek.presentation.overlay.OverlayService.Companion.launchOverlayService
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,7 +33,10 @@ class MainActivity : ComponentActivity() {
         }
 
         if (!Settings.canDrawOverlays(this)) {
-            checkDrawOverlayPermission();
+            checkDrawOverlayPermission()
+        } else {
+            toast("All permissions are granted")
+            finish()
         }
     }
 
