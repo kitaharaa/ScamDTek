@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ImageButton xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/iconImageView"
+    android:layout_width="60dp"
+    android:layout_height="60dp"
+    android:focusable="true"
+    android:clickable="true"
+    android:padding="15dp"
+    android:background="@drawable/cirle_shape"
+    android:contentDescription="TODO"
+    android:src="@drawable/baseline_comment_24" />
+
