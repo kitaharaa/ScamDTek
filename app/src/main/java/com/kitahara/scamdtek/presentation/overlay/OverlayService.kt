@@ -16,6 +16,7 @@ import android.view.WindowManager
 import com.kitahara.scamdtek.R
 import com.kitahara.scamdtek.common.toast
 import com.kitahara.scamdtek.presentation.contact_detail.ContactDetailActivity.Companion.launchContactDetailActivity
+import com.kitahara.scamdtek.presentation.overlay.OverlayService.Companion.launchOverlayService
 
 /**
  * Copied from [repository](https://github.com/noln/system-alert-window-example/blob/master/app/src/main/java/com/mattfenlon/ghost/MainService.java) with some adjustments
@@ -68,6 +69,7 @@ class OverlayService : Service() {
                 }
                 v.performClick()
                 launchDetailActivity()
+                onDestroy()
                 true
             }
         }
@@ -100,6 +102,11 @@ class OverlayService : Service() {
             overlayServiceIntent.putExtra(EXTRA_PHONE_NUMBER, phoneNumber)
             stopService(overlayServiceIntent)
             startService(overlayServiceIntent)
+        }
+
+        fun Context.stopOverlayService() {
+            val overlayServiceIntent = Intent(this, OverlayService::class.java)
+            stopService(overlayServiceIntent)
         }
     }
 }
