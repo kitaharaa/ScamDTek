@@ -16,7 +16,6 @@ import android.view.WindowManager
 import com.kitahara.scamdtek.R
 import com.kitahara.scamdtek.common.toast
 import com.kitahara.scamdtek.presentation.contact_detail.ContactDetailActivity.Companion.launchContactDetailActivity
-import com.kitahara.scamdtek.presentation.overlay.OverlayService.Companion.launchOverlayService
 
 /**
  * Copied from [repository](https://github.com/noln/system-alert-window-example/blob/master/app/src/main/java/com/mattfenlon/ghost/MainService.java) with some adjustments

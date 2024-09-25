@@ -83,7 +83,7 @@ class MainActivity : ComponentActivity() {
         when (requestCode) {
             123 -> {
                 Log.e(this@MainActivity::class.simpleName, "onActivityResult: triggered", )
-                if (resultCode == Activity.RESULT_OK) {
+                if (resultCode == RESULT_OK) {
                     //The user set you as the default screening app!
                 } else {
                     //the user didn't set you as the default screening app...
