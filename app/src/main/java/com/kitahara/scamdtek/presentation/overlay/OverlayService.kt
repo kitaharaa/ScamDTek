@@ -68,6 +68,7 @@ class OverlayService : Service() {
                 }
                 v.performClick()
                 launchDetailActivity()
+                onDestroy()
                 true
             }
         }
@@ -100,6 +101,11 @@ class OverlayService : Service() {
             overlayServiceIntent.putExtra(EXTRA_PHONE_NUMBER, phoneNumber)
             stopService(overlayServiceIntent)
             startService(overlayServiceIntent)
+        }
+
+        fun Context.stopOverlayService() {
+            val overlayServiceIntent = Intent(this, OverlayService::class.java)
+            stopService(overlayServiceIntent)
         }
     }
 }
