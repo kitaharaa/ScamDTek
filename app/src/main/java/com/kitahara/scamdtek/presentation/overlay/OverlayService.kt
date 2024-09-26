@@ -7,13 +7,13 @@ import android.content.Intent
 import android.graphics.PixelFormat
 import android.os.Build
 import android.os.IBinder
-import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.MotionEvent.ACTION_DOWN
 import android.view.View
 import android.view.WindowManager
 import com.kitahara.scamdtek.R
+import com.kitahara.scamdtek.common.logDebug
 import com.kitahara.scamdtek.common.toast
 import com.kitahara.scamdtek.presentation.contact_detail.ContactDetailActivity.Companion.launchContactDetailActivity
 
@@ -64,7 +64,7 @@ class OverlayService : Service() {
                 if (event.action == ACTION_DOWN) {
                     toast("Beep-beep")
                 } else {
-                    Log.e(TAG, "addOverlayView: action performed ${event.action}")
+                    logDebug("addOverlayView: action performed ${event.action}")
                 }
                 v.performClick()
                 launchDetailActivity()
@@ -94,7 +94,6 @@ class OverlayService : Service() {
 
     companion object {
         private const val EXTRA_PHONE_NUMBER = "PhoneNumber"
-        private val TAG: String = OverlayService::class.java.simpleName
 
         fun Context.launchOverlayService(phoneNumber: String) {
             val overlayServiceIntent = Intent(this, OverlayService::class.java)
