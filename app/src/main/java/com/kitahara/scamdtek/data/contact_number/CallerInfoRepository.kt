@@ -1,5 +1,6 @@
 package com.kitahara.scamdtek.data.contact_number
 
+import com.kitahara.scamdtek.common.logDebug
 import com.kitahara.scamdtek.common.logError
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -20,6 +21,7 @@ class CallerInfoRepository {
         }
 
     private fun fetchDocumentWithRetries(url: String): Document? {
+        logDebug("Fetching data: $url")
         var attempts = 0
 
         while (attempts < MAX_RETRIES) {
