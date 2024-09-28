@@ -3,9 +3,10 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
+        android:name=".app.MyApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -28,14 +29,17 @@
 
         <activity
             android:name=".presentation.contact_detail.ContactDetailActivity"
+            android:theme="@style/Theme.ScamDTek"
             android:exported="false" />
+
         <service android:name=".presentation.overlay.OverlayService" />
 
-        <service android:name=".presentation.incoming.IncomingCallService"
+        <service
+            android:name=".presentation.incoming.IncomingCallService"
             android:exported="true"
             android:permission="android.permission.BIND_SCREENING_SERVICE">
             <intent-filter>
-                <action android:name="android.telecom.CallScreeningService"/>
+                <action android:name="android.telecom.CallScreeningService" />
             </intent-filter>
         </service>
     </application>

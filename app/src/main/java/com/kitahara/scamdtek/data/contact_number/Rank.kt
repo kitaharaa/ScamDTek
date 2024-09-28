@@ -1,4 +1,4 @@
-package com.kitahara.scamdtek.presentation.contact_detail
+package com.kitahara.scamdtek.data.contact_number
 
 enum class Rank(val value: String) {
     NOT_DEFINED(""),
