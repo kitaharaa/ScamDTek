@@ -62,7 +62,7 @@ class ContactDetailActivity : ScopeActivity() {
             ScamDTekTheme {
                 val state by viewModel.viewState.collectAsState()
                 LazyColumn {
-                    stickyHeader {
+                    item {
                         val riskyPercentage by remember {
                             derivedStateOf {
                                 with(state) {
