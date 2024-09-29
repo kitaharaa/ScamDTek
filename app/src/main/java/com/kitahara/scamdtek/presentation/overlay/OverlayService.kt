@@ -1,5 +1,6 @@
 package com.kitahara.scamdtek.presentation.overlay
 
+import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.app.Service
 import android.content.Context
@@ -12,6 +13,7 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
+import android.view.animation.AccelerateDecelerateInterpolator
 import com.kitahara.scamdtek.R
 import com.kitahara.scamdtek.common.logDebug
 import com.kitahara.scamdtek.common.toast
@@ -90,8 +92,35 @@ class OverlayService : Service() {
 
                     // Called when pressed state is ended
                     MotionEvent.ACTION_UP -> {
-                        if (initialX == params.x && initialY == params.y)
+                        if (initialX == params.x && initialY == params.y) {
+                            // Perform activity launch when no changes in coordinates were observed
                             launchDetailActivity()
+                        } else {
+                            // Move overlay to start or end by X if it was triggered
+                            val metrics = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                                windowManager?.currentWindowMetrics
+                            } else {
+                                TODO("VERSION.SDK_INT < R")
+                            }
+
+                            val screenWidth = metrics?.bounds?.width()
+                            val finalXCoordinate = if (screenWidth == null || params.x  >= (screenWidth/2) ) {
+                                screenWidth ?: 0
+                            } else {
+                                0
+                            }
+                            // Animate position by updating the params.x directly
+                            val startX = params.x
+                            ValueAnimator.ofInt(startX, finalXCoordinate).apply {
+                                duration = 300
+                                interpolator = AccelerateDecelerateInterpolator()
+                                addUpdateListener { animation ->
+                                    params.x = animation.animatedValue as Int
+                                    windowManager?.updateViewLayout(floatyView, params)
+                                }
+                                start()
+                            }
+                        }
                         return true
                     }
                 }
