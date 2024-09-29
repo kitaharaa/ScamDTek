@@ -9,7 +9,7 @@ import android.os.Build
 import android.os.IBinder
 import android.view.Gravity
 import android.view.LayoutInflater
-import android.view.MotionEvent.ACTION_DOWN
+import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import com.kitahara.scamdtek.R
@@ -31,7 +31,7 @@ class OverlayService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
+        windowManager = getSystemService(WindowManager::class.java)
         addOverlayView()
     }
 
@@ -53,25 +53,51 @@ class OverlayService : Service() {
             layoutParamsType,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             PixelFormat.TRANSLUCENT
-        ).also {
-            it.gravity = Gravity.CENTER or Gravity.END
-            it.x = 0
-            it.y = 0
+        ).apply {
+            gravity = Gravity.CENTER or Gravity.END
         }
-        val inflater = getSystemService(LAYOUT_INFLATER_SERVICE) as LayoutInflater
-        floatyView = inflater.inflate(R.layout.floating_view, null).also {
-            it.setOnTouchListener { v, event ->
-                if (event.action == ACTION_DOWN) {
-                    toast("Beep-beep")
-                } else {
-                    logDebug("addOverlayView: action performed ${event.action}")
+        val inflater = getSystemService(LayoutInflater::class.java)
+        floatyView = inflater.inflate(R.layout.floating_view, null)
+
+        floatyView?.setOnTouchListener(object : View.OnTouchListener {
+            private var initialX = 0
+            private var initialY = 0
+            private var initialTouchX = 0f
+            private var initialTouchY = 0f
+
+            override fun onTouch(v: View, event: MotionEvent): Boolean {
+                logDebug("Action triggered: ${event.action}")
+                when (event.action) {
+                    // Called when moving action has started
+                    MotionEvent.ACTION_DOWN -> {
+                        // Remember initial position and touch point
+                        initialX = params.x
+                        initialY = params.y
+                        initialTouchX = event.rawX
+                        initialTouchY = event.rawY
+                        return true
+                    }
+
+                    MotionEvent.ACTION_MOVE -> {
+                        // Calculate new X and Y coordinates of the view
+                        params.x = initialX + (initialTouchX - event.rawX).toInt()
+                        params.y = initialY + (event.rawY - initialTouchY).toInt()
+
+                        // Update the layout with the new X and Y coordinates
+                        windowManager?.updateViewLayout(floatyView, params)
+                        return true
+                    }
+
+                    // Called when pressed state is ended
+                    MotionEvent.ACTION_UP -> {
+                        if (initialX == params.x && initialY == params.y)
+                            launchDetailActivity()
+                        return true
+                    }
                 }
-                v.performClick()
-                launchDetailActivity()
-                onDestroy()
-                true
+                return false
             }
-        }
+        })
         windowManager?.addView(floatyView, params)
     }
 
