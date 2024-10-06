@@ -34,9 +34,9 @@ class OverlayService : Service() {
         addOverlayView()
     }
 
-    override fun onStart(intent: Intent?, startId: Int) {
-        super.onStart(intent, startId)
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         contactNumber = intent?.extras?.getString(EXTRA_PHONE_NUMBER)
+        return START_NOT_STICKY
     }
 
     @SuppressLint("ClickableViewAccessibility")

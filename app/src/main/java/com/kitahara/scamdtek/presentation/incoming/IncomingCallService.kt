@@ -9,11 +9,6 @@ class IncomingCallService : CallScreeningService() {
     override fun onScreenCall(callDetails: Call.Details) {
         val phoneNumber = callDetails.handle.schemeSpecificPart
         logDebug("onScreenCall: $phoneNumber")
-        baseContext?.launchOverlayService(phoneNumber)
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        logDebug("onDestroy triggered")
+        launchOverlayService(phoneNumber)
     }
 }
