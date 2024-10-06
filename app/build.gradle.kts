@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId = "com.kitahara.scamdtek"
-        minSdk = 24
+        minSdk = 30
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
