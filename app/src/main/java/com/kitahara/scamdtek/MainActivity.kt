@@ -62,10 +62,10 @@ class MainActivity : ComponentActivity() {
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
-    private fun requestScreeningRole(){
+    private fun requestScreeningRole() {
         val roleManager = getSystemService(Context.ROLE_SERVICE) as RoleManager
         val isHeld = roleManager.isRoleHeld(RoleManager.ROLE_CALL_SCREENING)
-        if(!isHeld){
+        if (!isHeld) {
             //ask the user to set your app as the default screening app
             val intent = roleManager.createRequestRoleIntent(RoleManager.ROLE_CALL_SCREENING)
             startActivityForResult(intent, 123) // TODO catch response
