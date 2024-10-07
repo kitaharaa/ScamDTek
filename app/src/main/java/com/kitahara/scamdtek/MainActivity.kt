@@ -34,13 +34,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-
-        if (!Settings.canDrawOverlays(this)) {
-            checkDrawOverlayPermission()
-        } else {
-            toast("All permissions are granted")
-        }
-
+        if (!Settings.canDrawOverlays(this)) checkDrawOverlayPermission()
         requestScreeningRole()
     }
 

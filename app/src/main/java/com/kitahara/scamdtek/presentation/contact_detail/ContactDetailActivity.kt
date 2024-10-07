@@ -20,6 +20,7 @@ import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -79,40 +80,42 @@ class ContactDetailActivity : ScopeActivity() {
 @Composable
 fun ContactDetails(state: ContactDetailViewModel.ViewState) {
     ScamDTekTheme {
-        LazyColumn {
-            item {
-                val riskyPercentage by remember {
-                    derivedStateOf {
-                        with(state) {
-                            if (isLoading.not()) {
-                                callerDetails?.riskDegree ?: "Unknown"
-                            } else "Loading"
+        Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+            LazyColumn(modifier = Modifier.padding(innerPadding)) {
+                item {
+                    val riskyPercentage by remember {
+                        derivedStateOf {
+                            with(state) {
+                                if (isLoading.not()) {
+                                    callerDetails?.riskDegree ?: "Unknown"
+                                } else "Loading"
+                            }
                         }
                     }
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 50.dp),
+                        fontSize = 50.sp,
+                        textAlign = TextAlign.Center,
+                        text = riskyPercentage
+                    )
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 10.dp, bottom = 30.dp),
+                        fontSize = 20.sp,
+                        textAlign = TextAlign.Center,
+                        text = state.contactNumber
+                    )
                 }
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 50.dp),
-                    fontSize = 50.sp,
-                    textAlign = TextAlign.Center,
-                    text = riskyPercentage
-                )
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 10.dp, bottom = 30.dp),
-                    fontSize = 20.sp,
-                    textAlign = TextAlign.Center,
-                    text = state.contactNumber
-                )
-            }
-            if (state.isLoading) {
-                item { AwaitState("Wait a sec...", true) }
-            } else {
-                state.callerDetails?.comments?.let { comments ->
-                    items(comments) { CommentItem(it) }
-                } ?: item { AwaitState("Oops, no result found", false) }
+                if (state.isLoading) {
+                    item { AwaitState("Wait a sec...", true) }
+                } else {
+                    state.callerDetails?.comments?.let { comments ->
+                        items(comments) { CommentItem(it) }
+                    } ?: item { AwaitState("Oops, no result found", false) }
+                }
             }
         }
     }
