@@ -14,13 +14,12 @@ class ContactDetailViewModel(
     private val getCallerDetailsUseCase: GetCallerInfoUseCase
 ) : ViewModel() {
 
-    private val _viewState = MutableStateFlow(ViewState())
+    private val _viewState = MutableStateFlow(ViewState(contactNumber))
     val viewState get() = _viewState.asStateFlow()
 
     init {
         viewModelScope.launch {
             val details = getCallerDetailsUseCase(contactNumber)
-
             _viewState.update {
                 it.copy(
                     callerDetails = details,
@@ -31,6 +30,7 @@ class ContactDetailViewModel(
     }
 
     data class ViewState(
+        val contactNumber: String,
         val callerDetails: PhoneNumberRiskDetails? = null,
         val isLoading: Boolean = true
     )

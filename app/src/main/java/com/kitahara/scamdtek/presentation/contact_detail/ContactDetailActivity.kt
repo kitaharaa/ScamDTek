@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalFoundationApi::class)
-
 package com.kitahara.scamdtek.presentation.contact_detail
 
 import android.content.Context
@@ -9,7 +7,6 @@ import android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -59,37 +56,8 @@ class ContactDetailActivity : ScopeActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            ScamDTekTheme {
-                val state by viewModel.viewState.collectAsState()
-                LazyColumn {
-                    item {
-                        val riskyPercentage by remember {
-                            derivedStateOf {
-                                with(state) {
-                                    if (isLoading.not()) {
-                                        callerDetails?.riskDegree ?: "Unknown"
-                                    } else "Loading..."
-                                }
-                            }
-                        }
-                        Text(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 50.dp),
-                            fontSize = 50.sp,
-                            textAlign = TextAlign.Center,
-                            text = riskyPercentage
-                        )
-                    }
-                    if (state.isLoading) {
-                        item { AwaitState("Wait a sec...", true) }
-                    } else {
-                        state.callerDetails?.comments?.let { comments ->
-                            items(comments) { CommentItem(it) }
-                        } ?: item { AwaitState("Oops, no result found", false) }
-                    }
-                }
-            }
+            val state by viewModel.viewState.collectAsState()
+            ContactDetails(state)
         }
     }
 
@@ -104,6 +72,49 @@ class ContactDetailActivity : ScopeActivity() {
             }
         }
 
+    }
+}
+
+
+@Composable
+fun ContactDetails(state: ContactDetailViewModel.ViewState) {
+    ScamDTekTheme {
+        LazyColumn {
+            item {
+                val riskyPercentage by remember {
+                    derivedStateOf {
+                        with(state) {
+                            if (isLoading.not()) {
+                                callerDetails?.riskDegree ?: "Unknown"
+                            } else "Loading"
+                        }
+                    }
+                }
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 50.dp),
+                    fontSize = 50.sp,
+                    textAlign = TextAlign.Center,
+                    text = riskyPercentage
+                )
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 10.dp, bottom = 30.dp),
+                    fontSize = 20.sp,
+                    textAlign = TextAlign.Center,
+                    text = state.contactNumber
+                )
+            }
+            if (state.isLoading) {
+                item { AwaitState("Wait a sec...", true) }
+            } else {
+                state.callerDetails?.comments?.let { comments ->
+                    items(comments) { CommentItem(it) }
+                } ?: item { AwaitState("Oops, no result found", false) }
+            }
+        }
     }
 }
 
@@ -165,6 +176,12 @@ fun ChipItem(
             )
         }
     )
+}
+
+@Composable
+@Preview
+fun ContactDetailsPreview() {
+    ContactDetails(ContactDetailViewModel.ViewState(contactNumber = "+3809565701"))
 }
 
 @Preview
