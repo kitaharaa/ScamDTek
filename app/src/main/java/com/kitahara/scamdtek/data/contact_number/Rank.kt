@@ -11,8 +11,12 @@ enum class Rank(val text: String, val color: Color) {
     DANGEROUS("Небезпечний", Color.Red);
 
     companion object {
-        fun parse(rawValue: String): Rank {
-            return Rank.entries.find { it.text == rawValue } ?: NOT_DEFINED
-        }
+
+        fun parse(rawValue: String): Rank =
+            try {
+                Rank.valueOf(rawValue)
+            } catch (_: Exception) {
+                NOT_DEFINED
+            }
     }
 }
