@@ -5,24 +5,32 @@ import android.annotation.SuppressLint
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.graphics.PixelFormat
 import android.os.Build
 import android.os.IBinder
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.MotionEvent
-import android.view.View
 import android.view.WindowManager
 import android.view.animation.AccelerateDecelerateInterpolator
+import android.widget.ImageView
+import androidx.core.content.ContextCompat
 import com.kitahara.scamdtek.R
-import com.kitahara.scamdtek.common.toast
+import com.kitahara.scamdtek.data.database.dao.RiskWithCommentsDao
 import com.kitahara.scamdtek.presentation.contact_detail.ContactDetailActivity.Companion.launchContactDetailActivity
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import org.koin.android.ext.android.inject
 
 class OverlayService : Service() {
     private var windowManager: WindowManager? = null
-    private var floatyView: View? = null
-    private var contactNumber: String? = null
+    private var floatyView: ImageView? = null
+    private lateinit var contactNumber: String
     private lateinit var params: WindowManager.LayoutParams
+
+    private val dao by inject<RiskWithCommentsDao>()
 
     override fun onBind(intent: Intent): IBinder? {
         return null
@@ -35,7 +43,31 @@ class OverlayService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        contactNumber = intent?.extras?.getString(EXTRA_PHONE_NUMBER)
+
+        fun defineOverlayColor(riskDegree: String?): Int {
+            val percentage = riskDegree?.split(" ")?.first()?.toInt()
+            val colorCode =  when(percentage) {
+                in 41..49 -> R.color.overlayMid
+                in 50..100 -> R.color.overlayRisky
+                else -> R.color.overlayNeutral
+            }
+            return ContextCompat.getColor(baseContext, colorCode)
+        }
+
+        contactNumber = intent?.extras?.getString(EXTRA_PHONE_NUMBER) ?: throw Exception("Contact number cannot be null")
+        CoroutineScope(Dispatchers.Main).launch {
+            dao.getRisk(contactNumber).collect { riskDegree ->
+                val defaultColor = ContextCompat.getColor(baseContext, R.color.overlayDefault)
+                ValueAnimator.ofArgb(defaultColor, defineOverlayColor(riskDegree)).apply {
+                    duration = 2100
+                    addUpdateListener { animator ->
+                        // Update the background color as the animation progresses
+                        val color = animator.animatedValue as Int
+                        floatyView?.backgroundTintList = ColorStateList.valueOf(color)
+                    }
+                }.start()
+            }
+        }
         return START_NOT_STICKY
     }
 
@@ -74,7 +106,7 @@ class OverlayService : Service() {
         var initialTouchY = 0f
 
         val inflater = getSystemService(LayoutInflater::class.java)
-        floatyView = inflater.inflate(R.layout.floating_view, null)
+        floatyView = inflater.inflate(R.layout.floating_view, null) as ImageView
         floatyView?.setOnTouchListener { _, event ->
             when (event.action) {
                 // Called when moving action has started
@@ -137,11 +169,7 @@ class OverlayService : Service() {
     }
 
     private fun launchDetailActivity() {
-        if (contactNumber != null) {
-            launchContactDetailActivity(contactNumber!!)
-        } else {
-            toast("Contact number cannot be null")
-        }
+        launchContactDetailActivity(contactNumber)
         onDestroy() // Finish service
     }
 

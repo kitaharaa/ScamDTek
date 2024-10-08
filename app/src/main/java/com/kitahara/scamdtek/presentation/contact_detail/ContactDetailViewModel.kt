@@ -20,7 +20,7 @@ class ContactDetailViewModel(
     val viewState get() = _viewState.asStateFlow()
 
     init {
-        dao.getUsersWithPlaylists(contactNumber).onEach { riskWithComments ->
+        dao.getRiskWithComments(contactNumber).onEach { riskWithComments ->
             _viewState.update {
                 it.copy(
                     riskDegree = riskWithComments?.risk?.riskDegree,
