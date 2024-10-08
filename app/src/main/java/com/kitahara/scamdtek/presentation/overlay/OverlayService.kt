@@ -59,7 +59,7 @@ class OverlayService : Service() {
             dao.getRisk(contactNumber).collect { riskDegree ->
                 val defaultColor = ContextCompat.getColor(baseContext, R.color.overlayDefault)
                 ValueAnimator.ofArgb(defaultColor, defineOverlayColor(riskDegree)).apply {
-                    duration = 2100
+                    duration = OVERLAY_COLOR_CHANGE_DURATION
                     addUpdateListener { animator ->
                         // Update the background color as the animation progresses
                         val color = animator.animatedValue as Int
@@ -176,6 +176,7 @@ class OverlayService : Service() {
     companion object {
         private const val EXTRA_PHONE_NUMBER = "PhoneNumber"
         private const val OVERLAY_TRANSITION_DURATION = 300L
+        private const val OVERLAY_COLOR_CHANGE_DURATION = 2100L
 
         fun Context.launchOverlayService(phoneNumber: String) {
             val overlayServiceIntent = Intent(this, OverlayService::class.java)
