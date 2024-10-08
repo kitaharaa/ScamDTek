@@ -2,23 +2,28 @@ package com.kitahara.scamdtek.domain
 
 import com.kitahara.scamdtek.data.contact_number.CallerInfoRepository
 import com.kitahara.scamdtek.data.contact_number.Comment
-import com.kitahara.scamdtek.data.contact_number.PhoneNumberRiskDetails
+import com.kitahara.scamdtek.data.contact_number.Comment.Companion.toEntity
 import com.kitahara.scamdtek.data.contact_number.Rank
+import com.kitahara.scamdtek.data.database.dao.RiskWithCommentsDao
+import com.kitahara.scamdtek.data.database.entity.RiskEntity
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import org.jsoup.nodes.Document
 
-class GetCallerInfoUseCase(
-    private val callerInfoRepository: CallerInfoRepository
+class SyncCallerInfoUseCase(
+    private val callerInfoRepository: CallerInfoRepository,
+    private val riskWithCommentsDao: RiskWithCommentsDao
 ) {
 
-    suspend operator fun invoke(contactNumber: String): PhoneNumberRiskDetails? {
+    suspend operator fun invoke(contactNumber: String) {
         val document = callerInfoRepository.fetchPhoneNumberDetails(contactNumber)
-        return document?.let {
-            PhoneNumberRiskDetails(
-                riskDegree = extractRiskDegree(document),
-                comments = extractComments(document)
-            )
+        if (document == null) {
+            riskWithCommentsDao.insert(RiskEntity(phoneNumber =  contactNumber, riskDegree = null))
+        } else {
+            val riskDegree = extractRiskDegree(document)
+            val comments = extractComments(document)
+            val riskEntity = RiskEntity(phoneNumber = contactNumber, riskDegree = riskDegree)
+            riskWithCommentsDao.insert(riskEntity, comments.toEntity(contactNumber))
         }
     }
 

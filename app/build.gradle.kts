@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -73,4 +74,10 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     // Koin for Android
     implementation(libs.koin.android)
+
+    // TODO migrate to .toml
+    implementation( "androidx.room:room-runtime:2.6.1") // Check for latest version
+    // Kotlin Extensions and Coroutines support for Room
+    implementation ("androidx.room:room-ktx:2.6.1")
+    ksp("androidx.room:room-compiler:2.6.1")
 }
