@@ -3,7 +3,7 @@ package com.kitahara.scamdtek.data.contact_number
 import androidx.compose.ui.graphics.Color
 
 enum class Rank(val text: String, val color: Color) {
-    NOT_DEFINED("", Color.Gray),
+    NOT_DEFINED("Хтозна ", Color.Gray),
     USEFUL("Корисний", Color.Green),
     SAFE("Безпечний", Color.Blue),
     NEUTRAL("Нейтральний", Color.LightGray),

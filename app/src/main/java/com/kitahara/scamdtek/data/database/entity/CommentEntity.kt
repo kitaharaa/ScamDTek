@@ -11,9 +11,11 @@ data class CommentEntity(
     @PrimaryKey
     @ColumnInfo(PRIMARY_KEY)
     val commentId: Int = 0,
+    @ColumnInfo(RiskEntity.PRIMARY_KEY)
     val phoneNumber: String,
     val rank: Rank,
     val dateTime: DateTime,
+    val text: String
 ) {
     companion object {
         const val PRIMARY_KEY = "comment_id"

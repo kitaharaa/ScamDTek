@@ -24,9 +24,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -83,15 +81,9 @@ fun ContactDetails(state: ContactDetailViewModel.ViewState) {
         Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
             LazyColumn(modifier = Modifier.padding(innerPadding)) {
                 item {
-                    val riskyPercentage by remember {
-                        derivedStateOf {
-                            with(state) {
-                                if (isLoading.not()) {
-                                    callerDetails?.riskDegree ?: "Unknown"
-                                } else "Loading"
-                            }
-                        }
-                    }
+                    val riskyPercentage = if (state.isLoading) {
+                        "Loading"
+                    } else state.riskDegree ?: "Unknown"
                     Text(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -112,7 +104,7 @@ fun ContactDetails(state: ContactDetailViewModel.ViewState) {
                 if (state.isLoading) {
                     item { AwaitState("Wait a sec...", true) }
                 } else {
-                    state.callerDetails?.comments?.let { comments ->
+                    state.comments?.let { comments ->
                         items(comments) { CommentItem(it) }
                     } ?: item { AwaitState("Oops, no result found", false) }
                 }

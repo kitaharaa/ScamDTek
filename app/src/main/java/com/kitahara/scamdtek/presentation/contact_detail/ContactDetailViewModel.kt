@@ -2,36 +2,39 @@ package com.kitahara.scamdtek.presentation.contact_detail
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kitahara.scamdtek.data.contact_number.PhoneNumberRiskDetails
-import com.kitahara.scamdtek.domain.GetCallerInfoUseCase
+import com.kitahara.scamdtek.data.contact_number.Comment
+import com.kitahara.scamdtek.data.contact_number.Comment.Companion.toWrapper
+import com.kitahara.scamdtek.data.database.dao.RiskWithCommentsDao
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 
 class ContactDetailViewModel(
-    private val contactNumber: String,
-    private val getCallerDetailsUseCase: GetCallerInfoUseCase
+    contactNumber: String,
+    dao: RiskWithCommentsDao // TODO move to useCase
 ) : ViewModel() {
 
     private val _viewState = MutableStateFlow(ViewState(contactNumber))
     val viewState get() = _viewState.asStateFlow()
 
     init {
-        viewModelScope.launch {
-            val details = getCallerDetailsUseCase(contactNumber)
+        dao.getUsersWithPlaylists(contactNumber).onEach { riskWithComments ->
             _viewState.update {
                 it.copy(
-                    callerDetails = details,
-                    isLoading = false
+                    riskDegree = riskWithComments?.risk?.riskDegree,
+                    comments = riskWithComments?.comments?.toWrapper(),
+                    isLoading = riskWithComments == null
                 )
             }
-        }
+        }.launchIn(viewModelScope)
     }
 
     data class ViewState(
         val contactNumber: String,
-        val callerDetails: PhoneNumberRiskDetails? = null,
+        val riskDegree: String? = null,
+        val comments: List<Comment>? = null,
         val isLoading: Boolean = true
     )
 }

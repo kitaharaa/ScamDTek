@@ -8,7 +8,7 @@ data class RiskWithCommentsEntity(
     val risk: RiskEntity,
     @Relation(
         parentColumn = RiskEntity.PRIMARY_KEY,
-        entityColumn = CommentEntity.PRIMARY_KEY
+        entityColumn = RiskEntity.PRIMARY_KEY
     )
-    val comments: List<CommentEntity>
+    val comments: List<CommentEntity>?
 )
