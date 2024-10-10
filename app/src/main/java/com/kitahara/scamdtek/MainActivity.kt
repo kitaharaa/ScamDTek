@@ -4,13 +4,11 @@ import android.app.role.RoleManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -23,7 +21,6 @@ import com.kitahara.scamdtek.common.toast
 
 class MainActivity : ComponentActivity() {
 
-    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -37,13 +34,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-
-        if (!Settings.canDrawOverlays(this)) {
-            checkDrawOverlayPermission()
-        } else {
-            toast("All permissions are granted")
-        }
-
+        if (!Settings.canDrawOverlays(this)) checkDrawOverlayPermission()
         requestScreeningRole()
     }
 
@@ -61,7 +52,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.Q)
     private fun requestScreeningRole() {
         val roleManager = getSystemService(Context.ROLE_SERVICE) as RoleManager
         val isHeld = roleManager.isRoleHeld(RoleManager.ROLE_CALL_SCREENING)

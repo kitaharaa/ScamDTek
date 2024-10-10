@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.graphics.PixelFormat
 import android.os.IBinder
 import android.os.VibrationEffect
@@ -17,21 +18,28 @@ import android.view.WindowManager
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.ImageButton
 import android.widget.ImageView
+import androidx.core.content.ContextCompat
 import com.kitahara.scamdtek.R
-import com.kitahara.scamdtek.common.toast
+import com.kitahara.scamdtek.data.database.dao.RiskWithCommentsDao
 import com.kitahara.scamdtek.presentation.contact_detail.ContactDetailActivity.Companion.launchContactDetailActivity
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import org.koin.android.ext.android.inject
 
 class OverlayService : Service() {
     private val windowManager: WindowManager by lazy { getSystemService(WindowManager::class.java) }
     private val vibratorManager: Vibrator by lazy { getSystemService(Vibrator::class.java) as Vibrator }
     private var floatyView: ImageButton? = null
     private var recycleBinView: ImageView? = null
-    private var contactNumber: String? = null
+    private lateinit var contactNumber: String
     private lateinit var overlayParams: WindowManager.LayoutParams
     private lateinit var recycleBinParams: WindowManager.LayoutParams
 
     private val screenWidth get() = windowManager.currentWindowMetrics.bounds.width()
     private val screenHeight get() = windowManager.currentWindowMetrics.bounds.height()
+
+    private val dao by inject<RiskWithCommentsDao>()
 
     override fun onBind(intent: Intent): IBinder? {
         return null
@@ -43,7 +51,32 @@ class OverlayService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        contactNumber = intent?.extras?.getString(EXTRA_PHONE_NUMBER)
+
+        fun defineOverlayColor(riskDegree: String?): Int {
+            val percentage = riskDegree?.split(" ")?.first()?.toInt()
+            val colorCode =  when(percentage) {
+                in 41..49 -> R.color.overlayMid
+                in 50..100 -> R.color.overlayRisky
+                else -> R.color.overlayNeutral
+            }
+            return ContextCompat.getColor(baseContext, colorCode)
+        }
+
+        contactNumber = intent?.extras?.getString(EXTRA_PHONE_NUMBER) ?: throw Exception("Contact number cannot be null")
+        CoroutineScope(Dispatchers.Main).launch {
+            dao.getRisk(contactNumber).collect { riskDegree ->
+                val defaultColor = ContextCompat.getColor(baseContext, R.color.overlayDefault)
+                ValueAnimator.ofArgb(defaultColor, defineOverlayColor(riskDegree)).apply {
+                    duration = OVERLAY_COLOR_CHANGE_DURATION
+                    addUpdateListener { animator ->
+                        // Update the background color as the animation progresses
+                        val color = animator.animatedValue as Int
+                        floatyView?.backgroundTintList = ColorStateList.valueOf(color)
+                    }
+                }.start()
+            }
+        }
+
         return START_NOT_STICKY
     }
 
@@ -169,9 +202,7 @@ class OverlayService : Service() {
     }
 
     private fun launchDetailActivity() {
-        if (contactNumber != null) {
-            launchContactDetailActivity(contactNumber!!)
-        } else toast("Contact number cannot be null")
+        launchContactDetailActivity(contactNumber)
         removeViews()
         onDestroy() // Finish service
     }
@@ -198,6 +229,7 @@ class OverlayService : Service() {
     companion object {
         private const val EXTRA_PHONE_NUMBER = "PhoneNumber"
         private const val OVERLAY_TRANSITION_DURATION = 300L
+        private const val OVERLAY_COLOR_CHANGE_DURATION = 1500L
         private const val RECYCLE_BIN_SIZE = 175
         private const val OVERLAY_SIZE = 150
 

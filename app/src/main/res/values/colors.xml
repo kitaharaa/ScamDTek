@@ -7,6 +7,12 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
     <color name="gray">#6A6565</color>
     <color name="red">#CB2222</color>
+
+    <color name="overlayDefault">#807171</color>
+    <color name="overlayNeutral">#226971</color>
+    <color name="overlayMid">#12630F</color>
+    <color name="overlayRisky">#B72037</color>
 </resources>
