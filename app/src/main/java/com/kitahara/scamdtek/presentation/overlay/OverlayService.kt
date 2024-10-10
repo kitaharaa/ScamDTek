@@ -7,13 +7,16 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.PixelFormat
-import android.os.Build
 import android.os.IBinder
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.MotionEvent
+import android.view.View
 import android.view.WindowManager
 import android.view.animation.AccelerateDecelerateInterpolator
+import android.widget.ImageButton
 import android.widget.ImageView
 import androidx.core.content.ContextCompat
 import com.kitahara.scamdtek.R
@@ -25,10 +28,16 @@ import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 
 class OverlayService : Service() {
-    private var windowManager: WindowManager? = null
-    private var floatyView: ImageView? = null
+    private val windowManager: WindowManager by lazy { getSystemService(WindowManager::class.java) }
+    private val vibratorManager: Vibrator by lazy { getSystemService(Vibrator::class.java) as Vibrator }
+    private var floatyView: ImageButton? = null
+    private var recycleBinView: ImageView? = null
     private lateinit var contactNumber: String
-    private lateinit var params: WindowManager.LayoutParams
+    private lateinit var overlayParams: WindowManager.LayoutParams
+    private lateinit var recycleBinParams: WindowManager.LayoutParams
+
+    private val screenWidth get() = windowManager.currentWindowMetrics.bounds.width()
+    private val screenHeight get() = windowManager.currentWindowMetrics.bounds.height()
 
     private val dao by inject<RiskWithCommentsDao>()
 
@@ -38,7 +47,6 @@ class OverlayService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        windowManager = getSystemService(WindowManager::class.java)
         addOverlayView()
     }
 
@@ -68,34 +76,28 @@ class OverlayService : Service() {
                 }.start()
             }
         }
+
         return START_NOT_STICKY
     }
 
     @SuppressLint("ClickableViewAccessibility")
     private fun addOverlayView() {
-        val layoutParamsType = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-        } else {
-            WindowManager.LayoutParams.TYPE_PHONE
-        }
-        params = WindowManager.LayoutParams(
-            WindowManager.LayoutParams.WRAP_CONTENT,
-            WindowManager.LayoutParams.WRAP_CONTENT,
+        val layoutParamsType = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+        overlayParams = WindowManager.LayoutParams(
+            OVERLAY_SIZE,
+            OVERLAY_SIZE,
             layoutParamsType,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             PixelFormat.TRANSLUCENT
-        ).apply {
-            gravity = Gravity.CENTER or Gravity.END
-        }
+        )
+        recycleBinParams = WindowManager.LayoutParams(
+            RECYCLE_BIN_SIZE,
+            RECYCLE_BIN_SIZE,
+            layoutParamsType,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+            PixelFormat.TRANSLUCENT
+        )
         setupView()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        floatyView?.run {
-            windowManager?.removeView(floatyView)
-            null // Clear variable as well
-        }
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -106,14 +108,16 @@ class OverlayService : Service() {
         var initialTouchY = 0f
 
         val inflater = getSystemService(LayoutInflater::class.java)
-        floatyView = inflater.inflate(R.layout.floating_view, null) as ImageView
+        floatyView = inflater.inflate(R.layout.floating_view, null) as ImageButton?
+        recycleBinView = inflater.inflate(R.layout.view_recycle_bin, null) as ImageView?
         floatyView?.setOnTouchListener { _, event ->
             when (event.action) {
                 // Called when moving action has started
                 MotionEvent.ACTION_DOWN -> {
+                    recycleBinView?.visibility = View.VISIBLE
                     // Remember initial position and touch point
-                    initialX = params.x
-                    initialY = params.y
+                    initialX = overlayParams.x
+                    initialY = overlayParams.y
                     initialTouchX = event.rawX
                     initialTouchY = event.rawY
                     return@setOnTouchListener true
@@ -121,48 +125,77 @@ class OverlayService : Service() {
 
                 MotionEvent.ACTION_MOVE -> {
                     // Calculate new X and Y coordinates of the view
-                    params.x = initialX + (initialTouchX - event.rawX).toInt()
-                    params.y = initialY + (event.rawY - initialTouchY).toInt()
+                    overlayParams.x = initialX + (initialTouchX - event.rawX).toInt()
+                    overlayParams.y = initialY + (event.rawY - initialTouchY).toInt()
                     // Update the layout with the new X and Y coordinates
-                    windowManager?.updateViewLayout(floatyView, params)
+                    windowManager.updateViewLayout(floatyView, overlayParams)
+                    changeRecycleBinColor(overlayParams.x, overlayParams.y)
                     return@setOnTouchListener true
                 }
 
                 // Called when pressed state is ended
                 MotionEvent.ACTION_UP -> {
-                    if (initialX == params.x && initialY == params.y) {
-                        launchDetailActivity()
-                    } else moveOverlayToEdge()
+                    recycleBinView?.visibility = View.GONE
+                    when {
+                        initialX == overlayParams.x && initialY == overlayParams.y -> launchDetailActivity()
+                        isOverlayOverlapRecycleBin(overlayParams.x, overlayParams.y) -> {
+                            removeViews()
+                            onDestroy()
+                        }
+
+                        else -> moveOverlayToEdge()
+                    }
                     return@setOnTouchListener true
                 }
             }
             false
         }
-        windowManager?.addView(floatyView, params)
+
+        windowManager.addView(
+            floatyView,
+            overlayParams.apply { gravity = Gravity.CENTER or Gravity.END })
+        windowManager.addView(
+            recycleBinView,
+            recycleBinParams.apply { gravity = Gravity.CENTER or Gravity.BOTTOM })
+    }
+
+    private fun changeRecycleBinColor(overlayX: Int, overlayY: Int) {
+        val colorRes =
+            if (isOverlayOverlapRecycleBin(overlayX, overlayY)) {
+                vibrate()
+                R.color.red
+            } else R.color.gray
+        val color = getColor(colorRes)
+        recycleBinView?.setColorFilter(color)
+    }
+
+    private fun isOverlayOverlapRecycleBin(overlayX: Int, overlayY: Int): Boolean {
+        val recycleBinStartX = (screenWidth - RECYCLE_BIN_SIZE) / 2
+        val recycleBinEndX = recycleBinStartX + RECYCLE_BIN_SIZE
+        val recycleBinRangeX = recycleBinStartX..recycleBinEndX
+
+        val recycleBinStartY = (screenHeight - RECYCLE_BIN_SIZE) / 2
+        val recycleBinEndY = recycleBinStartY - RECYCLE_BIN_SIZE / 2
+        val recycleBinRangeY = recycleBinEndY..recycleBinStartY
+
+        val overlayCenterX = overlayX + OVERLAY_SIZE / 2
+        val overlayCenterY = overlayY + OVERLAY_SIZE / 2
+
+        return overlayCenterX in recycleBinRangeX && overlayCenterY in recycleBinRangeY
     }
 
     private fun moveOverlayToEdge() {
         // Move overlay to start or end by X if it was triggered
-        val metrics = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            windowManager?.currentWindowMetrics
-        } else {
-            TODO("VERSION.SDK_INT < R")
-        }
+        val finalXCoordinate = if (overlayParams.x >= (screenWidth / 2)) screenWidth else 0
 
-        val screenWidth = metrics?.bounds?.width()
-        val finalXCoordinate = if (screenWidth == null || params.x >= (screenWidth / 2)) {
-            screenWidth ?: 0
-        } else {
-            0
-        }
         // Animate position by updating the params.x directly
-        val startX = params.x
+        val startX = overlayParams.x
         ValueAnimator.ofInt(startX, finalXCoordinate).apply {
             duration = OVERLAY_TRANSITION_DURATION
             interpolator = AccelerateDecelerateInterpolator()
             addUpdateListener { animation ->
-                params.x = animation.animatedValue as Int
-                windowManager?.updateViewLayout(floatyView, params)
+                overlayParams.x = animation.animatedValue as Int
+                windowManager.updateViewLayout(floatyView, overlayParams)
             }
             start()
         }
@@ -170,13 +203,35 @@ class OverlayService : Service() {
 
     private fun launchDetailActivity() {
         launchContactDetailActivity(contactNumber)
+        removeViews()
         onDestroy() // Finish service
+    }
+
+    private fun removeViews() {
+        floatyView?.run {
+            windowManager.removeView(this)
+            null // Clear variable as well
+        }
+        recycleBinView?.run {
+            windowManager.removeView(this)
+            null
+        }
+    }
+
+    private fun vibrate(duration: Long = 50L) {
+        try {
+            val effect = VibrationEffect.createOneShot(duration, 150)
+            vibratorManager.vibrate(effect)
+        } catch (_: Exception) {
+        }
     }
 
     companion object {
         private const val EXTRA_PHONE_NUMBER = "PhoneNumber"
         private const val OVERLAY_TRANSITION_DURATION = 300L
-        private const val OVERLAY_COLOR_CHANGE_DURATION = 2100L
+        private const val OVERLAY_COLOR_CHANGE_DURATION = 1500L
+        private const val RECYCLE_BIN_SIZE = 175
+        private const val OVERLAY_SIZE = 150
 
         fun Context.launchOverlayService(phoneNumber: String) {
             val overlayServiceIntent = Intent(this, OverlayService::class.java)

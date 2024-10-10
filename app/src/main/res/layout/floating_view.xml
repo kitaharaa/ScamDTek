@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ImageButton xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/iconImageView"
+    android:id="@+id/overlayImageButton"
     android:layout_width="60dp"
     android:layout_height="60dp"
-    android:focusable="true"
+    android:background="@drawable/round_shape"
     android:clickable="true"
+    android:contentDescription="@string/get_number_info"
+    android:focusable="true"
     android:padding="15dp"
-    android:background="@drawable/cirle_shape"
-    android:backgroundTint="@color/overlayDefault"
-    android:contentDescription="TODO"
     android:src="@drawable/baseline_comment_24" />
 
