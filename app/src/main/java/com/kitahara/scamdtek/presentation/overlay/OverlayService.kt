@@ -65,18 +65,6 @@ class OverlayService : Service() {
         setupView()
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        floatyView?.run {
-            windowManager?.removeView(this)
-            null // Clear variable as well
-        }
-        recycleBinView?.run {
-            windowManager?.removeView(this)
-            null
-        }
-    }
-
     @SuppressLint("ClickableViewAccessibility")
     private fun setupView() {
         var initialX = 0
@@ -115,7 +103,11 @@ class OverlayService : Service() {
                     recycleBinView?.visibility = View.GONE
                     when {
                         initialX == overlayParams.x && initialY == overlayParams.y -> launchDetailActivity()
-                        isOverlayOverlapRecycleBin(overlayParams.x, overlayParams.y) -> onDestroy()
+                        isOverlayOverlapRecycleBin(overlayParams.x, overlayParams.y) -> {
+                            removeViews()
+                            onDestroy()
+                        }
+
                         else -> moveOverlayToEdge()
                     }
                     return@setOnTouchListener true
@@ -175,7 +167,19 @@ class OverlayService : Service() {
         if (contactNumber != null) {
             launchContactDetailActivity(contactNumber!!)
         } else toast("Contact number cannot be null")
+        removeViews()
         onDestroy() // Finish service
+    }
+
+    private fun removeViews() {
+        floatyView?.run {
+            windowManager?.removeView(this)
+            null // Clear variable as well
+        }
+        recycleBinView?.run {
+            windowManager?.removeView(this)
+            null
+        }
     }
 
     companion object {
