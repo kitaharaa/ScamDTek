@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.kitahara.scamdtek.data.contact_number.Comment
 import com.kitahara.scamdtek.data.contact_number.Comment.Companion.toWrapper
 import com.kitahara.scamdtek.data.database.dao.RiskWithCommentsDao
+import com.kitahara.scamdtek.domain.ResolveCallerInfo
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
@@ -13,14 +14,14 @@ import kotlinx.coroutines.flow.update
 
 class ContactDetailViewModel(
     contactNumber: String,
-    dao: RiskWithCommentsDao // TODO move to useCase
+    resolveCallerInfo: ResolveCallerInfo
 ) : ViewModel() {
 
     private val _viewState = MutableStateFlow(ViewState(contactNumber))
     val viewState get() = _viewState.asStateFlow()
 
     init {
-        dao.getRiskWithComments(contactNumber).onEach { riskWithComments ->
+        resolveCallerInfo(contactNumber).onEach { riskWithComments ->
             _viewState.update {
                 it.copy(
                     riskDegree = riskWithComments?.risk?.riskDegree,

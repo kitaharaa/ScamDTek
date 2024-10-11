@@ -143,12 +143,7 @@ class OverlayService : Service() {
 
     private fun moveOverlayToEdge() {
         // Move overlay to start or end by X if it was triggered
-        val metrics = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            windowManager?.currentWindowMetrics
-        } else {
-            TODO("VERSION.SDK_INT < R")
-        }
-
+        val metrics = windowManager?.currentWindowMetrics
         val screenWidth = metrics?.bounds?.width()
         val finalXCoordinate = if (screenWidth == null || params.x >= (screenWidth / 2)) {
             screenWidth ?: 0

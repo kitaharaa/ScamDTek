@@ -2,6 +2,7 @@ package com.kitahara.scamdtek.app
 
 import com.kitahara.scamdtek.data.contact_number.CallerInfoRepository
 import com.kitahara.scamdtek.data.database.CallerInfoDatabase
+import com.kitahara.scamdtek.domain.ResolveCallerInfo
 import com.kitahara.scamdtek.domain.SyncCallerInfoUseCase
 import com.kitahara.scamdtek.presentation.contact_detail.ContactDetailViewModel
 import org.koin.core.module.Module
@@ -11,14 +12,13 @@ import org.koin.dsl.module
 
 object AppModules {
 
-    var appModules: List<Module> = listOf()
     private val contactDetailModule = module {
         single { CallerInfoRepository() }
         viewModel { ContactDetailViewModel(get(), get()) }
     }
-
-    private val syncCallerInfoModule = module {
+    private val callerInfoModule = module {
         factory { SyncCallerInfoUseCase(get(), get()) }
+        factory { ResolveCallerInfo(get()) }
     }
 
     private val databaseModule = module {
@@ -26,11 +26,9 @@ object AppModules {
         single { (get() as CallerInfoDatabase).riskWithCommentsDao() }
     }
 
-    init {
-        appModules = listOf(
-            contactDetailModule,
-            databaseModule,
-            syncCallerInfoModule,
-        )
-    }
+    val appModules: List<Module> = listOf(
+        contactDetailModule,
+        databaseModule,
+        callerInfoModule,
+    )
 }
