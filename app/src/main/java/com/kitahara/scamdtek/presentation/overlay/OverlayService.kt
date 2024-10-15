@@ -30,11 +30,12 @@ import org.koin.android.ext.android.inject
 class OverlayService : Service() {
     private val windowManager: WindowManager by lazy { getSystemService(WindowManager::class.java) }
     private val vibratorManager: Vibrator by lazy { getSystemService(Vibrator::class.java) as Vibrator }
+    private val overlayParams: WindowManager.LayoutParams by lazy { buildViewLayoutParams(OVERLAY_SIZE) }
+    private val recycleBinParams: WindowManager.LayoutParams by lazy { buildViewLayoutParams(RECYCLE_BIN_SIZE) }
+
     private var floatyView: ImageButton? = null
     private var recycleBinView: ImageView? = null
     private lateinit var contactNumber: String
-    private lateinit var overlayParams: WindowManager.LayoutParams
-    private lateinit var recycleBinParams: WindowManager.LayoutParams
 
     private val screenWidth get() = windowManager.currentWindowMetrics.bounds.width()
     private val screenHeight get() = windowManager.currentWindowMetrics.bounds.height()
@@ -47,14 +48,15 @@ class OverlayService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        addOverlayView()
+
+        setupViews()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
         fun defineOverlayColor(riskDegree: String?): Int {
             val percentage = riskDegree?.split(" ")?.first()?.toInt()
-            val colorCode =  when(percentage) {
+            val colorCode = when (percentage) {
                 in 41..49 -> R.color.overlayMid
                 in 50..100 -> R.color.overlayRisky
                 else -> R.color.overlayNeutral
@@ -62,7 +64,8 @@ class OverlayService : Service() {
             return ContextCompat.getColor(baseContext, colorCode)
         }
 
-        contactNumber = intent?.extras?.getString(EXTRA_PHONE_NUMBER) ?: throw Exception("Contact number cannot be null")
+        contactNumber = intent?.extras?.getString(EXTRA_PHONE_NUMBER)
+            ?: throw Exception("Contact number cannot be null")
         CoroutineScope(Dispatchers.Main).launch {
             dao.getRisk(contactNumber).collect { riskDegree ->
                 val defaultColor = ContextCompat.getColor(baseContext, R.color.overlayDefault)
@@ -80,28 +83,17 @@ class OverlayService : Service() {
         return START_NOT_STICKY
     }
 
-    @SuppressLint("ClickableViewAccessibility")
-    private fun addOverlayView() {
-        val layoutParamsType = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-        overlayParams = WindowManager.LayoutParams(
-            OVERLAY_SIZE,
-            OVERLAY_SIZE,
-            layoutParamsType,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-            PixelFormat.TRANSLUCENT
-        )
-        recycleBinParams = WindowManager.LayoutParams(
-            RECYCLE_BIN_SIZE,
-            RECYCLE_BIN_SIZE,
-            layoutParamsType,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-            PixelFormat.TRANSLUCENT
-        )
-        setupView()
-    }
+    private fun buildViewLayoutParams(size: Int) = WindowManager.LayoutParams(
+        size, size,
+        WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
+                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON,
+        PixelFormat.TRANSLUCENT
+    )
 
     @SuppressLint("ClickableViewAccessibility")
-    private fun setupView() {
+    private fun setupViews() {
         var initialX = 0
         var initialY = 0
         var initialTouchX = 0f
@@ -153,10 +145,12 @@ class OverlayService : Service() {
 
         windowManager.addView(
             floatyView,
-            overlayParams.apply { gravity = Gravity.CENTER or Gravity.END })
+            overlayParams.apply { gravity = Gravity.CENTER or Gravity.END }
+        )
         windowManager.addView(
             recycleBinView,
-            recycleBinParams.apply { gravity = Gravity.CENTER or Gravity.BOTTOM })
+            recycleBinParams.apply { gravity = Gravity.CENTER or Gravity.BOTTOM }
+        )
     }
 
     private fun changeRecycleBinColor(overlayX: Int, overlayY: Int) {
