@@ -46,6 +46,7 @@ class ContactDetailActivity : ScopeActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setShowWhenLocked(true)
         enableEdgeToEdge()
         setContent {
             val state by viewModel.viewState.collectAsState()

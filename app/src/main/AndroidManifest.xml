@@ -31,6 +31,7 @@
         <activity
             android:name=".presentation.contact_detail.ContactDetailActivity"
             android:theme="@style/Theme.ScamDTek"
+            android:launchMode="singleInstance"
             android:exported="false" />
 
         <service android:name=".presentation.overlay.OverlayService" />
