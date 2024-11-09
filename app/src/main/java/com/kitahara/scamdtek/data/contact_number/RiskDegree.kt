@@ -2,7 +2,7 @@ package com.kitahara.scamdtek.data.contact_number
 
 import androidx.compose.ui.graphics.Color
 
-enum class Rank(val text: String, val color: Color) {
+enum class RiskDegree(val text: String, val color: Color) {
     NOT_DEFINED("Хтозна ", Color.Gray),
     USEFUL("Корисний", Color.Green),
     SAFE("Безпечний", Color.Blue),
@@ -12,11 +12,13 @@ enum class Rank(val text: String, val color: Color) {
 
     companion object {
 
-        fun parse(rawValue: String): Rank =
-            try {
-                Rank.valueOf(rawValue)
+        fun parse(rawValue: String?): RiskDegree {
+            if (rawValue == null) return NOT_DEFINED
+            return try {
+                RiskDegree.valueOf(rawValue)
             } catch (_: Exception) {
                 NOT_DEFINED
             }
+        }
     }
 }

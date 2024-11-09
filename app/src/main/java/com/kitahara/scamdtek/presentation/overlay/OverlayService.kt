@@ -64,7 +64,7 @@ class OverlayService : Service() {
 
         contactNumber = intent?.extras?.getString(EXTRA_PHONE_NUMBER) ?: throw Exception("Contact number cannot be null")
         CoroutineScope(Dispatchers.Main).launch {
-            dao.getRisk(contactNumber).collect { riskDegree ->
+            dao.getCallerInfo(contactNumber).collect { riskDegree ->
                 val defaultColor = ContextCompat.getColor(baseContext, R.color.overlayDefault)
                 ValueAnimator.ofArgb(defaultColor, defineOverlayColor(riskDegree)).apply {
                     duration = OVERLAY_COLOR_CHANGE_DURATION

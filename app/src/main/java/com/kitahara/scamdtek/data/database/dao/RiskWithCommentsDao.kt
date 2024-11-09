@@ -20,10 +20,14 @@ interface RiskWithCommentsDao {
 
     @Transaction
     @Query("SELECT * FROM RiskEntity where phone_number=:phoneNumber")
-    fun getRiskWithComments(phoneNumber: String): Flow<RiskWithCommentsEntity?>
+    fun getCallerInfoWithComments(phoneNumber: String): Flow<RiskWithCommentsEntity?>
+
+    @Transaction
+    @Query("SELECT * FROM RiskEntity")
+    fun getAllCallersInfoWithComments(): Flow<List<RiskWithCommentsEntity>>
 
     @Query("SELECT riskDegree FROM RiskEntity where phone_number=:phoneNumber")
-    fun getRisk(phoneNumber: String): Flow<String?>
+    fun getCallerInfo(phoneNumber: String): Flow<String>
 
     @Transaction
     suspend fun insert(riskEntity: RiskEntity, comments: List<CommentEntity>?) {
