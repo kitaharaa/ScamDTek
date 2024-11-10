@@ -28,18 +28,28 @@ data class ChipPreference(
 
 @Composable
 fun InformationWithSideChipsItem(
+    modifier: Modifier = Modifier,
     baseText: String,
-    rightChipPreference: ChipPreference,
+    rightChipPreference: ChipPreference?,
     leftChipPreference: ChipPreference?,
 ) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 15.dp),
         contentAlignment = Alignment.TopStart
     ) {
         Column(Modifier.padding(horizontal = 4.dp, vertical = 2.dp)) {
-            ChipItem(chipPreference = rightChipPreference)
+            Box(Modifier.fillMaxWidth()) {
+                ChipItem(
+                    modifier = Modifier.align(Alignment.TopStart),
+                    chipPreference = rightChipPreference
+                )
+                ChipItem(
+                    modifier = Modifier.align(Alignment.TopEnd),
+                    chipPreference = leftChipPreference
+                )
+            }
             Spacer(Modifier.height(8.dp))
             Text(text = baseText)
             HorizontalDivider(
@@ -49,7 +59,6 @@ fun InformationWithSideChipsItem(
                 thickness = 2.dp
             )
         }
-        ChipItem(modifier = Modifier.align(Alignment.TopEnd), leftChipPreference)
     }
 }
 
