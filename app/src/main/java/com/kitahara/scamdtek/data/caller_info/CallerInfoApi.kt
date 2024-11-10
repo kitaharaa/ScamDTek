@@ -1,4 +1,4 @@
-package com.kitahara.scamdtek.data.contact_number
+package com.kitahara.scamdtek.data.caller_info
 
 import com.kitahara.scamdtek.common.logDebug
 import com.kitahara.scamdtek.common.logError
@@ -7,20 +7,20 @@ import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 
-class CallerInfoRepository {
+class CallerInfoApi {
 
-    suspend fun fetchPhoneNumberDetails(contactNumber: String): Document? =
+    suspend fun fetchDetails(phoneNumber: String): Document? =
         withContext(Dispatchers.IO) {
             try {
-                val url = String.format(GET_PHONE_NUMBER_DETAILS_URL, contactNumber)
-                fetchDocumentWithRetries(url)
+                val url = String.format(GET_PHONE_NUMBER_DETAILS_URL, phoneNumber)
+                fetchDocument(url)
             } catch (e: Exception) {
                 logError(e.message)
                 null
             }
         }
 
-    private fun fetchDocumentWithRetries(url: String): Document? {
+    private fun fetchDocument(url: String): Document? {
         logDebug("Fetching data: $url")
         var attempts = 0
 

@@ -1,28 +1,28 @@
-package com.kitahara.scamdtek.domain
+package com.kitahara.scamdtek.data
 
-import com.kitahara.scamdtek.data.contact_number.CallerInfoRepository
-import com.kitahara.scamdtek.data.contact_number.Comment
-import com.kitahara.scamdtek.data.contact_number.Comment.Companion.toEntity
-import com.kitahara.scamdtek.data.contact_number.Rank
+import com.kitahara.scamdtek.data.caller_info.CallerInfoApi
+import com.kitahara.scamdtek.data.caller_info.Comment
+import com.kitahara.scamdtek.data.caller_info.Comment.Companion.toEntity
+import com.kitahara.scamdtek.data.caller_info.RiskDegree
 import com.kitahara.scamdtek.data.database.dao.RiskWithCommentsDao
 import com.kitahara.scamdtek.data.database.entity.RiskEntity
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import org.jsoup.nodes.Document
 
-class SyncCallerInfoUseCase(
-    private val callerInfoRepository: CallerInfoRepository,
+class CallerInfoRepository(
+    private val callerInfoApi: CallerInfoApi,
     private val riskWithCommentsDao: RiskWithCommentsDao
 ) {
 
-    suspend operator fun invoke(contactNumber: String) {
-        val document = callerInfoRepository.fetchPhoneNumberDetails(contactNumber)
+    suspend fun sync(contactNumber: String) {
+        val document = callerInfoApi.fetchDetails(contactNumber)
         if (document == null) {
-            riskWithCommentsDao.insert(RiskEntity(phoneNumber =  contactNumber, riskDegree = null))
+            riskWithCommentsDao.insert(RiskEntity(phoneNumber =  contactNumber, riskDegree = RiskDegree.NOT_DEFINED))
         } else {
-            val riskDegree = extractRiskDegree(document)
+            val riskDegreeRaw = extractRiskDegree(document)
             val comments = extractComments(document)
-            val riskEntity = RiskEntity(phoneNumber = contactNumber, riskDegree = riskDegree)
+            val riskEntity = RiskEntity(phoneNumber = contactNumber, riskDegree = RiskDegree.parse(riskDegreeRaw))
             riskWithCommentsDao.insert(riskEntity, comments.toEntity(contactNumber))
         }
     }
@@ -39,10 +39,10 @@ class SyncCallerInfoUseCase(
             val text = comment.select("div.comment p.comment-text").text()
             val addedAtRaw = comment.select("div.comment span.date").text()
 
-            val rank = Rank.parse(rankRaw)
+            val riskDegree = RiskDegree.parse(rankRaw)
             val addedAt = DateTime.parse(addedAtRaw, DateTimeFormat.forPattern("dd.MM.yyyy"))
 
-            Comment(rank = rank, text = text, addedAt = addedAt)
+            Comment(riskDegree = riskDegree, text = text, addedAt = addedAt)
         }
     }
 }
