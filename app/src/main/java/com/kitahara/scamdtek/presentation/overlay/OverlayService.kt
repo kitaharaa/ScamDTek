@@ -20,6 +20,7 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import androidx.core.content.ContextCompat
 import com.kitahara.scamdtek.R
+import com.kitahara.scamdtek.data.caller_info.RiskDegree
 import com.kitahara.scamdtek.data.database.dao.RiskWithCommentsDao
 import com.kitahara.scamdtek.presentation.contact_detail.ContactDetailActivity.Companion.launchContactDetailActivity
 import kotlinx.coroutines.CoroutineScope
@@ -54,12 +55,11 @@ class OverlayService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
-        fun defineOverlayColor(riskDegree: String?): Int {
-            val percentage = riskDegree?.split(" ")?.first()?.toInt()
-            val colorCode = when (percentage) {
-                in 41..49 -> R.color.overlayMid
-                in 50..100 -> R.color.overlayRisky
-                else -> R.color.overlayNeutral
+        fun defineOverlayColor(riskDegree: RiskDegree): Int {
+            val colorCode = when (riskDegree) {
+                RiskDegree.USEFUL -> R.color.overlayMid
+                RiskDegree.NOT_DEFINED -> R.color.overlayDefault
+                else -> R.color.overlayRisky
             }
             return ContextCompat.getColor(baseContext, colorCode)
         }
@@ -69,7 +69,7 @@ class OverlayService : Service() {
         CoroutineScope(Dispatchers.Main).launch {
             dao.getCallerInfo(contactNumber).collect { riskDegree ->
                 val defaultColor = ContextCompat.getColor(baseContext, R.color.overlayDefault)
-                ValueAnimator.ofArgb(defaultColor, defineOverlayColor(riskDegree)).apply {
+                ValueAnimator.ofArgb(defaultColor, defineOverlayColor(RiskDegree.parse(riskDegree))).apply {
                     duration = OVERLAY_COLOR_CHANGE_DURATION
                     addUpdateListener { animator ->
                         // Update the background color as the animation progresses
