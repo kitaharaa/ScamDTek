@@ -1,7 +1,7 @@
 package com.kitahara.scamdtek.data.database.type_converter
 
 import androidx.room.TypeConverter
-import com.kitahara.scamdtek.data.contact_number.RiskDegree
+import com.kitahara.scamdtek.data.caller_info.RiskDegree
 
 class RiskDegreeTypeConverter {
 

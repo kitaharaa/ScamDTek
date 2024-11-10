@@ -1,4 +1,4 @@
-package com.kitahara.scamdtek.data.contact_number
+package com.kitahara.scamdtek.data.caller_info
 
 import androidx.compose.ui.graphics.Color
 

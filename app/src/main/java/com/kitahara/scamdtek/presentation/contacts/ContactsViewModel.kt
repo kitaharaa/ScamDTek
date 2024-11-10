@@ -2,7 +2,7 @@ package com.kitahara.scamdtek.presentation.contacts
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kitahara.scamdtek.data.contact_number.RiskDegree
+import com.kitahara.scamdtek.data.caller_info.RiskDegree
 import com.kitahara.scamdtek.domain.ResolveCallerInfoUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

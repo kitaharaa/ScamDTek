@@ -3,7 +3,7 @@ package com.kitahara.scamdtek.data.database.entity
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.kitahara.scamdtek.data.contact_number.RiskDegree
+import com.kitahara.scamdtek.data.caller_info.RiskDegree
 import org.joda.time.DateTime
 
 @Entity

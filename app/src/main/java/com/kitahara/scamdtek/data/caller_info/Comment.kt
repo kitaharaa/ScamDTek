@@ -1,4 +1,4 @@
-package com.kitahara.scamdtek.data.contact_number
+package com.kitahara.scamdtek.data.caller_info
 
 import com.kitahara.scamdtek.data.database.entity.CommentEntity
 import org.joda.time.DateTime

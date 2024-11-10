@@ -1,22 +1,22 @@
-package com.kitahara.scamdtek.domain
+package com.kitahara.scamdtek.data
 
-import com.kitahara.scamdtek.data.contact_number.CallerInfoRepository
-import com.kitahara.scamdtek.data.contact_number.Comment
-import com.kitahara.scamdtek.data.contact_number.Comment.Companion.toEntity
-import com.kitahara.scamdtek.data.contact_number.RiskDegree
+import com.kitahara.scamdtek.data.caller_info.CallerInfoApi
+import com.kitahara.scamdtek.data.caller_info.Comment
+import com.kitahara.scamdtek.data.caller_info.Comment.Companion.toEntity
+import com.kitahara.scamdtek.data.caller_info.RiskDegree
 import com.kitahara.scamdtek.data.database.dao.RiskWithCommentsDao
 import com.kitahara.scamdtek.data.database.entity.RiskEntity
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import org.jsoup.nodes.Document
 
-class SyncCallerInfoUseCase(
-    private val callerInfoRepository: CallerInfoRepository,
+class CallerInfoRepository(
+    private val callerInfoApi: CallerInfoApi,
     private val riskWithCommentsDao: RiskWithCommentsDao
 ) {
 
-    suspend operator fun invoke(contactNumber: String) {
-        val document = callerInfoRepository.fetchPhoneNumberDetails(contactNumber)
+    suspend fun sync(contactNumber: String) {
+        val document = callerInfoApi.fetchDetails(contactNumber)
         if (document == null) {
             riskWithCommentsDao.insert(RiskEntity(phoneNumber =  contactNumber, riskDegree = RiskDegree.NOT_DEFINED))
         } else {

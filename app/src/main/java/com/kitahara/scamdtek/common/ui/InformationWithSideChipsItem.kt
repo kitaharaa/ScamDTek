@@ -17,7 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.kitahara.scamdtek.data.contact_number.RiskDegree
+import com.kitahara.scamdtek.data.caller_info.RiskDegree
 
 data class ChipPreference(
     val text: String,
