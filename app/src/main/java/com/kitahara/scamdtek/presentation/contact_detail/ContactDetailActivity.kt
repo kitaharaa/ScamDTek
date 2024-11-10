@@ -77,7 +77,7 @@ fun ContactDetails(state: ContactDetailViewModel.ViewState) {
                 item {
                     val riskyPercentage = if (state.isLoading) {
                         "Loading"
-                    } else state.riskDegree?.text ?: "0%"
+                    } else state.callerInfoItem?.riskDegree?.text ?: "0%"
                     Text(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -98,7 +98,7 @@ fun ContactDetails(state: ContactDetailViewModel.ViewState) {
                 if (state.isLoading) {
                     item { AwaitState("Wait a sec...", true) }
                 } else {
-                    state.comments?.let { comments ->
+                    state.callerInfoItem?.comments?.let { comments ->
                         items(comments) {
                             InformationWithSideChipsItem(
                                 baseText = it.text,

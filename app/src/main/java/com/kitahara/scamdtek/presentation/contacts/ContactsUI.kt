@@ -16,13 +16,14 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import com.kitahara.scamdtek.common.ui.ChipPreference
 import com.kitahara.scamdtek.common.ui.InformationWithSideChipsItem
+import com.kitahara.scamdtek.domain.model.CallerInfoItem
 import com.kitahara.scamdtek.presentation.contact_detail.ContactDetailActivity.Companion.launchContactDetailActivity
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ContactsUI(
     modifier: Modifier = Modifier,
-    contacts: List<ContactsViewModel.CallerInfoItem>
+    contacts: List<CallerInfoItem>
 ) {
     val context = LocalContext.current
     val scrollBehavior =
@@ -35,7 +36,7 @@ fun ContactsUI(
         }
     ) { padding ->
         LazyColumn(Modifier.padding(padding)) {
-            items(contacts + contacts + contacts + contacts + contacts + contacts + contacts) { contact ->
+            items(contacts) { contact ->
                 InformationWithSideChipsItem(
                     modifier = Modifier.clickable {
                         context.launchContactDetailActivity(contact.number)

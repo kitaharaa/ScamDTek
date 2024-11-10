@@ -2,7 +2,7 @@ package com.kitahara.scamdtek.app
 
 import com.kitahara.scamdtek.data.caller_info.CallerInfoApi
 import com.kitahara.scamdtek.data.database.CallerInfoDatabase
-import com.kitahara.scamdtek.domain.ResolveCallerInfoUseCase
+import com.kitahara.scamdtek.domain.ResolveCallerInfoItemUseCase
 import com.kitahara.scamdtek.data.CallerInfoRepository
 import com.kitahara.scamdtek.presentation.contact_detail.ContactDetailViewModel
 import com.kitahara.scamdtek.presentation.contacts.ContactsViewModel
@@ -19,7 +19,7 @@ object AppModules {
     }
     private val callerInfoModule = module {
         factory { CallerInfoRepository(get(), get()) }
-        factory { ResolveCallerInfoUseCase(get()) }
+        factory { ResolveCallerInfoItemUseCase(get()) }
     }
     private val contactsModule = module {
         viewModel { ContactsViewModel(get()) }

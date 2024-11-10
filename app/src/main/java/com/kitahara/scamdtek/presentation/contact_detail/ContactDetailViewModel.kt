@@ -2,10 +2,8 @@ package com.kitahara.scamdtek.presentation.contact_detail
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kitahara.scamdtek.data.caller_info.Comment
-import com.kitahara.scamdtek.data.caller_info.Comment.Companion.toWrapper
-import com.kitahara.scamdtek.data.caller_info.RiskDegree
-import com.kitahara.scamdtek.domain.ResolveCallerInfoUseCase
+import com.kitahara.scamdtek.domain.ResolveCallerInfoItemUseCase
+import com.kitahara.scamdtek.domain.model.CallerInfoItem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
@@ -14,19 +12,18 @@ import kotlinx.coroutines.flow.update
 
 class ContactDetailViewModel(
     contactNumber: String,
-    resolveCallerInfoUseCase: ResolveCallerInfoUseCase
+    resolveCallerInfoItemUseCase: ResolveCallerInfoItemUseCase
 ) : ViewModel() {
 
     private val _viewState = MutableStateFlow(ViewState(contactNumber))
     val viewState get() = _viewState.asStateFlow()
 
     init {
-        resolveCallerInfoUseCase.getCallerInfoWithComments(contactNumber).onEach { riskWithComments ->
+        resolveCallerInfoItemUseCase.getCallerInfoWithComments(contactNumber).onEach { callerInfoItem ->
             _viewState.update {
                 it.copy(
-                    riskDegree = riskWithComments?.risk?.riskDegree,
-                    comments = riskWithComments?.comments?.toWrapper(),
-                    isLoading = riskWithComments == null
+                    callerInfoItem = callerInfoItem,
+                    isLoading = (callerInfoItem == null)
                 )
             }
         }.launchIn(viewModelScope)
@@ -34,8 +31,7 @@ class ContactDetailViewModel(
 
     data class ViewState(
         val contactNumber: String,
-        val riskDegree: RiskDegree? = RiskDegree.NOT_DEFINED,
-        val comments: List<Comment>? = null,
+        val callerInfoItem: CallerInfoItem? = null,
         val isLoading: Boolean = true
     )
 }
