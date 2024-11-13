@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "641669530274",
+    "project_id": "scam-dtek",
+    "storage_bucket": "scam-dtek.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:641669530274:android:dd0032a5ee0cbf7ea74dfb",
+        "android_client_info": {
+          "package_name": "com.kitahara.scamdtek"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBkxNK1uHHv_GjCr3G1GVGZndJjSwm4eV0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
