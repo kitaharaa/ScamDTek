@@ -1,1 +1,1 @@
-Mobile application to detect calling scammers
+Mobile application for scammer detection
